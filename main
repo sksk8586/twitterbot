@@ -1,0 +1,65 @@
+import random
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
+
+
+PROMISED_UP = "YOUR PROMISED UPLOAD SPEED HERE"
+PROMISED_DOWN = "YOUR PROMISED DOWNLOAD SPEED HERE"
+TWITTER_USER = "YOUR TWITTER USERNAME HERE"
+TWITTER_PASS = "YOUR TWITTER PASSWORD HERE"
+INTERNETPROVIDER = "YOUR INTERNET SERVICE PROVIDER"
+
+wait = random.randint(40, 50)
+wait_small = random.randint(1,3)
+wait_large = random.randint(5,8)
+
+
+
+class InternetSpeedTwitBot():
+
+    def __init__(self):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_experimental_option("detach", True)
+        self.driver = webdriver.Chrome(options=chrome_options)
+
+
+    def get_speed(self):
+        self.driver.get("https://www.speedtest.net/")
+        self.go_botton = self.driver.find_element(By.XPATH,'//*[@id="container"]/div/div[3]/div/div/div/div[2]/div[3]/div[1]')
+        self.go_botton.click()
+        time.sleep(wait)
+        global downloads_str
+        downloads = self.driver.find_element(By.CLASS_NAME, "result-data-large")
+        downloads_str = str(downloads.text)
+        print(f"down: {downloads.text}")
+        global upload_str
+        uploads = self.driver.find_element(By.XPATH, '//*[@id="container"]/div/div[3]/div/div/div/div[2]/div[3]/div[3]/div/div[3]/div/div/div[2]/div[1]/div[2]/div/div[2]/span')
+        upload_str = str(uploads.text)
+        print(f"up: {uploads.text}")
+
+
+    def login(self):
+        self.driver.get("https://twitter.com/home")
+        time.sleep(wait_large)
+        self.user_input = self.driver.find_element(By.CLASS_NAME, 'r-30o5oe')
+        self.user_input.send_keys(TWITTER_USER)
+        self.user_input.send_keys(Keys.ENTER)
+        time.sleep(wait_small)
+        self.pass_input = self.driver.find_elements(By.CLASS_NAME, 'r-30o5oe')[1]
+        self.pass_input.send_keys(TWITTER_PASS)
+        self.pass_input.send_keys(Keys.ENTER)
+
+
+    def complain(self):
+        time.sleep(wait_large)
+        self.tweet_inp = self.driver.find_element(By.CLASS_NAME, "public-DraftStyleDefault-block")
+        self.tweet_inp.send_keys(f"Hey @{INTERNETPROVIDER} why is my internet speed {downloads_str}down/{upload_str}up when I pay for {PROMISED_DOWN}down/{PROMISED_UP}up?")
+
+        self.post = self.driver.find_element(By.XPATH, '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[3]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div[2]/div/div/div/div[3]')
+        self.post.click()
+bot = InternetSpeedTwitBot()
+bot.get_speed()
+bot.login()
+bot.complain()
